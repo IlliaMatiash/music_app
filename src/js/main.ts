@@ -9,22 +9,29 @@ const playlist = document.querySelector<HTMLElement>(".playlist");
 
 let tabIndexNumber: number;
 let counter: number;
-let arrPlaylist: number[];
+let arrPlaylist: any[];
+
+
+
+
+
 
 
 // const formList = document.querySelector<HTMLElement>(".form-list");
 
+// clean variables
 function clean (): void{
     formList.innerHTML = "";
     tabIndexNumber = 0;
     counter = 0;
     arrPlaylist = [];
+
 }
 
 // render 
 search.addEventListener("input", () => {
     if(search.value == ""){
-        formList.innerHTML = "";
+        clean();
     }else{
         searchState(search.value).then(data => {
             clean();
@@ -64,9 +71,10 @@ search.addEventListener("input", () => {
                     row.focus()
                 })
                 row.addEventListener("focus", () => {
-                    apiForPlaylist(row.id).then(data => {
-                        search.value = `${element.artist.name} ${element.title}`;
-                    })
+                    // apiForPlaylist(row.id).then(data => {
+                        // let element: number = Number(row.id);
+                        search.value = `${arrPlaylist[counter - 1].artistName} ${arrPlaylist[counter - 1].title}`;
+                    // })
                 })
                 formList.append(row);
             });
@@ -77,6 +85,8 @@ search.addEventListener("input", () => {
     }
 });
 
+
+
 function renderPlaylist(element: number, arr: any): void{
     let row = document.createElement("div");
     row.classList.add("row");
@@ -86,6 +96,7 @@ function renderPlaylist(element: number, arr: any): void{
                     <div class = "discription">
                         <h4>Artist: ${arr[element].artistName}</h4>
                         <p>Title: ${arr[element].title}</p>
+                        <audio controls src = "${arr[element].track}"></audio>
                     </div>
                     <div class = "controlPlaylist">
                         <button onclick = "this.parentNode.parentNode.remove()">Delete</button>
@@ -126,7 +137,9 @@ document.addEventListener('keydown', (e) => {
             addFocus();
         }
     }else if (e.keyCode == 13){
-        renderPlaylist(counter - 1, arrPlaylist);
+        if(search.value != "" && counter > 0){
+            renderPlaylist(counter - 1, arrPlaylist);
+        }
     }
 });
 
