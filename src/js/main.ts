@@ -68,13 +68,9 @@ search.addEventListener("input", () => {
                 })
     
                 row.addEventListener("mouseover", () => {
-                    row.focus()
-                })
-                row.addEventListener("focus", () => {
-                    // apiForPlaylist(row.id).then(data => {
-                        // let element: number = Number(row.id);
-                        search.value = `${arrPlaylist[counter - 1].artistName} ${arrPlaylist[counter - 1].title}`;
-                    // })
+                    row.focus();
+                        let element: number = Number(row.id) - 1;
+                        search.value = `${arrPlaylist[element].artistName} ${arrPlaylist[element].title}`;
                 })
                 formList.append(row);
             });
@@ -119,6 +115,8 @@ const apiForPlaylist = async (element: string) => {
     return data;
 }
 
+
+
 // add click for down and up btn
 document.addEventListener('keydown', (e) => {
     if(e.keyCode == 40) {
@@ -126,6 +124,7 @@ document.addEventListener('keydown', (e) => {
             if(counter >= 0){
                 counter++;
                 addFocus();
+                cursorNone();
             }
             else{
                 return;
@@ -135,6 +134,7 @@ document.addEventListener('keydown', (e) => {
         if(counter > 1){
             counter--;
             addFocus();
+            cursorNone();
         }
     }else if (e.keyCode == 13){
         if(search.value != "" && counter > 0){
@@ -147,5 +147,23 @@ document.addEventListener('keydown', (e) => {
 function addFocus(){
     let focusElement: HTMLElement = document.getElementById(`${counter}`);
     focusElement.focus();
+    search.value = `${arrPlaylist[counter - 1].artistName} ${arrPlaylist[counter - 1].title}`;
 }
+
+// did that cursors can`t click
+function cursorNone(): void{
+    document.querySelector("body").style.cursor = "none";
+    document.querySelector("body").style.pointerEvents = "none";
+}
+
+// did that cursors can click
+function cursorVisibility(): void {
+    document.querySelector("body").style.cursor = "auto";
+    document.querySelector("body").style.pointerEvents = "auto";
+}
+
+document.addEventListener('mousemove', () => {
+    cursorVisibility();
+})
+
 
