@@ -7,64 +7,92 @@ const formList = document.querySelector<HTMLElement>(".form-list");
 const playlist = document.querySelector<HTMLElement>(".playlist");
 
 
-
-
 let tabIndexNumber: number;
-
 let counter: number;
-
-let idArr: number[];
+let arrPlaylist: number[];
 
 
 // const formList = document.querySelector<HTMLElement>(".form-list");
 
+function clean (): void{
+    formList.innerHTML = "";
+    tabIndexNumber = 0;
+    counter = 0;
+    arrPlaylist = [];
+}
+
 // render 
 search.addEventListener("input", () => {
-    searchState(search.value).then(data => {
+    if(search.value == ""){
         formList.innerHTML = "";
-        tabIndexNumber = 0;
-        counter = 0;
-        idArr = [];
-        data.data.forEach(function(element: any){
-            // create div with class .row
-            tabIndexNumber++;
-            let row = document.createElement('div');
-            row.classList.add("row");
-            row.id = `${element.id}`;
-            idArr.push(element.id);
-            row.tabIndex = tabIndexNumber;
-            row.innerHTML = `<div class = "image">
-                                <img src = ${element.album.cover}>
-                             </div>
-                             <div class = "discription">
-                                <h4>Artist: ${element.artist.name}</h4>
-                                <p>Title: ${element.title}</p>
-                             </div>`
-            row.addEventListener("click", () => {
-                apiForPlaylist(row.id).then(data => {
-                    let row = document.createElement("div");
-                    row.classList.add("row");
-                    row.innerHTML = `<div class = "image">
-                                        <img src = ${element.album.cover}>
-                                    </div>
-                                    <div class = "discription">
-                                        <h4>Artist: ${element.artist.name}</h4>
-                                        <p>Title: ${element.title}</p>
-                                    </div>
-                                    <div class = "controlPlaylist">
-                                        <button onclick = "this.parentNode.parentNode.remove()">Delete</button>
-                                    </div>`;
-                    playlist.appendChild(row);
+    }else{
+        searchState(search.value).then(data => {
+            clean();
+            data.data.forEach(function(element: any){
+                // create div with class .row
+                tabIndexNumber++;
+                let row = document.createElement('div');
+                row.classList.add("row");
+                // row.id = `${element.id}`;
+                row.id = `${tabIndexNumber}`;
+                // idArr.push();
+                row.tabIndex = tabIndexNumber;
+                
+                // create Array with all song what we found
+                const song: any = {
+                    img: element.album.cover,
+                    artistName: element.artist.name,
+                    title: element.title,
+                    track: element.preview 
+                }
+                arrPlaylist.push(song);
+                row.innerHTML = `<div class = "image">
+                                    <img src = ${element.album.cover}>
+                                 </div>
+                                 <div class = "discription">
+                                    <h4>Artist: ${element.artist.name}</h4>
+                                    <p>Title: ${element.title}</p>
+                                 </div>`
+    
+                row.addEventListener("click", () => {
+                    let element: number = Number(row.id);
+                    renderPlaylist(element, arrPlaylist);
+    
                 })
-                console.log(row.id)
-            })
-            row.addEventListener("mouseover", () => {
-                row.focus()
-            })
-            formList.append(row);
-        });
-    })
-})
+    
+                row.addEventListener("mouseover", () => {
+                    row.focus()
+                })
+                row.addEventListener("focus", () => {
+                    apiForPlaylist(row.id).then(data => {
+                        search.value = `${element.artist.name} ${element.title}`;
+                    })
+                })
+                formList.append(row);
+            });
+            console.log(data.data)
+            // renderSearchElement();
+            
+        })
+    }
+});
+
+function renderPlaylist(element: number, arr: any): void{
+    let row = document.createElement("div");
+    row.classList.add("row");
+    row.innerHTML = `<div class = "image">
+                        <img src = ${arr[element].img}>
+                    </div>
+                    <div class = "discription">
+                        <h4>Artist: ${arr[element].artistName}</h4>
+                        <p>Title: ${arr[element].title}</p>
+                    </div>
+                    <div class = "controlPlaylist">
+                        <button onclick = "this.parentNode.parentNode.remove()">Delete</button>
+                    </div>`;
+    playlist.appendChild(row);
+
+}
 
 // search element from input
 const searchState = async (element: string) => {
@@ -80,23 +108,12 @@ const apiForPlaylist = async (element: string) => {
     return data;
 }
 
-// searchState("7 years");
-
-// function getUsers(element: string)  {
-//     return fetch(API + element).then(res => {
-//           return res.json();
-//     }).catch(err => {
-//         console.log('Cant get users' ,err);
-//     })
-// }
-
 // add click for down and up btn
 document.addEventListener('keydown', (e) => {
     if(e.keyCode == 40) {
         if(counter < tabIndexNumber){
             if(counter >= 0){
                 counter++;
-                console.log(counter)
                 addFocus();
             }
             else{
@@ -106,15 +123,16 @@ document.addEventListener('keydown', (e) => {
     }else if(e.keyCode == 38){
         if(counter > 1){
             counter--;
-            console.log(counter)
-
             addFocus();
         }
+    }else if (e.keyCode == 13){
+        renderPlaylist(counter - 1, arrPlaylist);
     }
 });
 
 // focus on element from search
 function addFocus(){
-    let focusElement: HTMLElement = document.getElementById(`${idArr[counter-1]}`);
+    let focusElement: HTMLElement = document.getElementById(`${counter}`);
     focusElement.focus();
 }
+
