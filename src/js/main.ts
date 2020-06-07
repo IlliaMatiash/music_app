@@ -2,9 +2,15 @@ const API: string = `https://cors-anywhere.herokuapp.com/http://api.deezer.com/`
 
 const search = document.querySelector<HTMLInputElement>(".search");
 
+const searchClean = document.querySelector<HTMLElement>(".search-clean");
+
+const burger = document.querySelector<HTMLElement>(".burger");
+
 const formList = document.querySelector<HTMLElement>(".form-list");
 
 const playlist = document.querySelector<HTMLElement>(".playlist");
+
+const body = document.querySelector<HTMLElement>("body");
 
 
 let tabIndexNumber: number;
@@ -13,11 +19,6 @@ let arrPlaylist: any[];
 
 
 
-
-
-
-
-// const formList = document.querySelector<HTMLElement>(".form-list");
 
 // clean variables
 function clean (): void{
@@ -31,28 +32,31 @@ function clean (): void{
 // render 
 search.addEventListener("input", () => {
     if(search.value == ""){
+        // searchClean.style.display = "none";
         clean();
     }else{
         searchState(search.value).then(data => {
             clean();
+
+            searchClean.style.display = "block";
             data.data.forEach(function(element: any){
                 // create div with class .row
                 tabIndexNumber++;
                 let row = document.createElement('div');
                 row.classList.add("row");
-                // row.id = `${element.id}`;
                 row.id = `${tabIndexNumber}`;
                 // idArr.push();
                 row.tabIndex = tabIndexNumber;
                 
                 // create Array with all song what we found
-                const song: any = {
+                const song: object = {
                     img: element.album.cover,
                     artistName: element.artist.name,
                     title: element.title,
                     track: element.preview 
                 }
                 arrPlaylist.push(song);
+
                 row.innerHTML = `<div class = "image">
                                     <img src = ${element.album.cover}>
                                  </div>
@@ -62,7 +66,7 @@ search.addEventListener("input", () => {
                                  </div>`
     
                 row.addEventListener("click", () => {
-                    let element: number = Number(row.id);
+                    let element: number = Number(row.id) - 1;
                     renderPlaylist(element, arrPlaylist);
     
                 })
@@ -74,13 +78,9 @@ search.addEventListener("input", () => {
                 })
                 formList.append(row);
             });
-            console.log(data.data)
-            // renderSearchElement();
-            
         })
     }
 });
-
 
 
 function renderPlaylist(element: number, arr: any): void{
@@ -92,11 +92,14 @@ function renderPlaylist(element: number, arr: any): void{
                     <div class = "discription">
                         <h4>Artist: ${arr[element].artistName}</h4>
                         <p>Title: ${arr[element].title}</p>
-                        <audio controls src = "${arr[element].track}"></audio>
                     </div>
                     <div class = "controlPlaylist">
                         <button onclick = "this.parentNode.parentNode.remove()">Delete</button>
-                    </div>`;
+                        <svg onclick = "like(this)">
+                            <use xlink:href="./img/symbol/svg/sprite.symbol.svg#heart-alt"/>
+                        </svg>
+                    </div>
+                    <audio controls src = "${arr[element].track}"></audio>`;
     playlist.appendChild(row);
 
 }
@@ -110,6 +113,7 @@ const searchState = async (element: string) => {
 
 // search element from input
 const apiForPlaylist = async (element: string) => {
+
     const response = await fetch(API + "track/" + element);
     const data = await response.json();
     return data;
@@ -152,18 +156,36 @@ function addFocus(){
 
 // did that cursors can`t click
 function cursorNone(): void{
-    document.querySelector("body").style.cursor = "none";
-    document.querySelector("body").style.pointerEvents = "none";
+    body.style.cursor = "none";
+    body.style.pointerEvents = "none";
 }
 
 // did that cursors can click
 function cursorVisibility(): void {
-    document.querySelector("body").style.cursor = "auto";
-    document.querySelector("body").style.pointerEvents = "auto";
+    body.style.cursor = "auto";
+    body.style.pointerEvents = "auto";
 }
 
 document.addEventListener('mousemove', () => {
     cursorVisibility();
+})
+
+function like(element: any): void{
+    element.classList.toggle("like");
+}
+
+// clear input value
+searchClean.addEventListener("click", () =>{
+    if(search.value != ""){
+        clean();
+        search.value = "";
+        searchClean.style.display = "none";
+    }
+});
+
+
+burger.addEventListener("click", () => {
+    playlist.classList.toggle("active");
 })
 
 
